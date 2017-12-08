@@ -214,44 +214,32 @@ def trade_sign_order(trade_sign={},contracts_hand={}):#根据交易信号下单
                 Short=trader.QryPosition(key,QL_POSITION_Sell_All)#空单总计
                 if Short>0:#存在空单：平仓并多单
                     #平
-                    OrderRef= trader.InsertOrder(key, QL_D_Buy, QL_OF_Close,\
-                        QL_OPT_LastPrice,getLastPrice(key,'sell'), Short)
+                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Buy, QL_OF_Close,\
+                        QL_OPT_LimitPrice,getLastPrice(key,'sell'), Short)
                     message=key+',long,close,'+str(Short)+','+\
                         str(getLastPrice(key,'sell'))+','+str(dt.datetime.today())[:19]
-                    ret=trader.DeleteOrder(key,OrderRef)
-                    if ret==0:
-                        message=message+',success'
-                    else:
-                        message=message+',fail'
+
                     printLog(message)
                     order_send=order_send+message+';\n'
                     
                     #开
-                    OrderRef= trader.InsertOrder(key, QL_D_Buy, QL_OF_Open,\
-                        QL_OPT_LastPrice,getLastPrice(key,'sell'), contracts_hand[key])
+                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Buy, QL_OF_Open,\
+                        QL_OPT_LimitPrice,getLastPrice(key,'sell'), contracts_hand[key])
                     
                     message=key+',long,open,'+str(contracts_hand[key])+','+str(getLastPrice(key,'sell'))+','+\
                            str(dt.datetime.today())[:19]
-                    ret=trader.DeleteOrder(key,OrderRef)
-                    if ret==0:
-                        message=message+',success'
-                    else:
-                        message=message+',fail'
+
                     printLog(message)
                     order_send=order_send+message+';\n'
                     
                 else :#不存在空单，开多单
                     #开
-                    OrderRef= trader.InsertOrder(key, QL_D_Buy, QL_OF_Open,\
-                        QL_OPT_LastPrice,getLastPrice(key,'sell'), contracts_hand[key])
+                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Buy, QL_OF_Open,\
+                        QL_OPT_LimitPrice,getLastPrice(key,'sell'), contracts_hand[key])
                     
                     message=key+',long,open,'+str(contracts_hand[key])+','+str(getLastPrice(key,'sell'))+','+\
                            str(dt.datetime.today())[:19]
-                    ret=trader.DeleteOrder(key,OrderRef)
-                    if ret==0:
-                        message=message+',success'
-                    else:
-                        message=message+',fail'
+  
                     printLog(message)
                     order_send=order_send+message+';\n'
                     
@@ -261,40 +249,28 @@ def trade_sign_order(trade_sign={},contracts_hand={}):#根据交易信号下单
                 if Long>0:#存在多单：平仓并空单
                     
                     #平
-                    OrderRef= trader.InsertOrder(key, QL_D_Sell, QL_OF_Close,\
-                        QL_OPT_LastPrice, getLastPrice(key,'buy'), Long)
+                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Sell, QL_OF_Close,\
+                        QL_OPT_LimitPrice, getLastPrice(key,'buy'), Long)
                     message=key+',short,close,'+str(Long)+','+\
                              str(getLastPrice(key,'buy'))+','+str(dt.datetime.today())[:19]
-                    ret=trader.DeleteOrder(key,OrderRef)
-                    if ret==0:
-                        message=message+',success'
-                    else:
-                        message=message+',fail'
+        
                     printLog(message)
                     order_send=order_send+message+';\n'
                     #开
-                    OrderRef= trader.InsertOrder(key, QL_D_Sell, QL_OF_Open,\
-                        QL_OPT_LastPrice, getLastPrice(key,'buy'), contracts_hand[key])
+                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Sell, QL_OF_Open,\
+                        QL_OPT_LimitPrice, getLastPrice(key,'buy'), contracts_hand[key])
                     message=key+',short,open,'+str(contracts_hand[key])+','+str(getLastPrice(key,'buy'))+','+\
                         str(dt.datetime.today())[:19]
-                    ret=trader.DeleteOrder(key,OrderRef)
-                    if ret==0:
-                        message=message+',success'
-                    else:
-                        message=message+',fail'
+             
                     printLog(message)
                     order_send=order_send+message+';\n'
                 else :#不存在多单，开空单
                     #开
-                    OrderRef= trader.InsertOrder(key, QL_D_Sell, QL_OF_Open,\
-                        QL_OPT_LastPrice, getLastPrice(key,'buy'), contracts_hand[key])
+                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Sell, QL_OF_Open,\
+                        QL_OPT_LimitPrice, getLastPrice(key,'buy'), contracts_hand[key])
                     message=key+',short,open,'+str(contracts_hand[key])+','+str(getLastPrice(key,'buy'))+','+\
                         str(dt.datetime.today())[:19]
-                    ret=trader.DeleteOrder(key,OrderRef)
-                    if ret==0:
-                        message=message+',success'
-                    else:
-                        message=message+',fail'
+
                     printLog(message)
                     order_send=order_send+message+';\n'
             else:

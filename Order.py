@@ -30,7 +30,7 @@ setting=fun.createdir([order_dir,cache_dir])
 #%%全局变量定义
 
 #关注的月份和品种（可定制）
-Focus_dates=['1805','1809']#关注的合约月份
+Focus_dates=['1805']#关注的合约月份
 Focus_commoditys=['I','JM']#关注的商品期货
 commoditys_hand={'I':1,'JM':1}#商品期货的交易手数
 contracts=[]#合约总数
@@ -78,7 +78,7 @@ def main():
         f.write(trade_log)
         f.close()
         fun.sendEmail('bdml_dyt@outlook.com','dyt520shenghuo',\
-        '727379993@qq.com','OrderSign',trade_log)
+        '727379993@qq.com','OrderLog',str(trade_log))
  
 #%%执行程序
 if __name__ == '__main__':
