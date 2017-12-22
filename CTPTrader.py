@@ -26,7 +26,7 @@ import time
 class CTPTrader(object):
 	def __init__(self):
 
-		self.d2 = CDLL('QuickLibTD_L.dll')
+		self.d2 = CDLL('QuickLibTD.dll')
 
 		self.fLogin = self.d2.Login
 		self.fLogin.argtypes = []
@@ -80,6 +80,50 @@ class CTPTrader(object):
 		self.fQryQueryMaxOrderVolume.argtypes = [c_char_p,c_char_p,c_char_p,c_char,c_char,c_char,c_int32]
 		self.fQryQueryMaxOrderVolume.restype = c_int32				
 			
+		self.fOnCmd = self.d2.OnCmd
+		self.fOnCmd.argtypes = []
+		self.fOnCmd.restype = c_int32
+	
+		self.fGetCmd = self.d2.GetCmd
+		self.fGetCmd.argtypes = []
+		self.fGetCmd.restype = c_int32
+	
+		self.fGetCmdContent = self.d2.GetCmdContent
+		self.fGetCmdContent.argtypes = []
+		self.fGetCmdContent.restype = c_char_p
+		
+		
+		self.fGetCmdContent_Order = self.d2.GetCmdContent_Order
+		self.fGetCmdContent_Order.argtypes = []
+		self.fGetCmdContent_Order.restype = c_void_p
+		
+		self.fGetCmdContent_Settlement = self.d2.GetCmdContent_Settlement
+		self.fGetCmdContent_Settlement.argtypes = []
+		self.fGetCmdContent_Settlement.restype = c_void_p	
+		
+		self.fGetCmdContent_Error = self.d2.GetCmdContent_Error
+		self.fGetCmdContent_Error.argtypes = []
+		self.fGetCmdContent_Error.restype = c_void_p			
+		
+		#self.fGetCmdContent_Error = self.d2.GetCmdContent_Error
+		#self.fGetCmdContent_Error.argtypes = []
+		#self.fGetCmdContent_Error.restype = c_void_p			
+		
+		self.fGetCmdContent_LoginScuess = self.d2.GetCmdContent_LoginScuess
+		self.fGetCmdContent_LoginScuess.argtypes = []		
+		self.fGetCmdContent_LoginScuess.restype = c_int32	
+		
+		self.fGetCmdContent_Connected = self.d2.GetCmdContent_Connected
+		self.fGetCmdContent_Connected.argtypes = []		
+		self.fGetCmdContent_Connected.restype = c_int32
+		
+		self.fGetCmdContent_ProductGroupMargin = self.d2.GetCmdContent_ProductGroupMargin
+		self.fGetCmdContent_ProductGroupMargin.argtypes = []	
+		self.fGetCmdContent_ProductGroupMargin.restype = c_int32
+		
+		self.fGetCmdContent_CommissionRate = self.d2.GetCmdContent_CommissionRate
+		self.fGetCmdContent_CommissionRate.argtypes = []		
+		self.fGetCmdContent_CommissionRate.restype = c_int32				
 		
 	def Login(self):
 		return self.fLogin()
@@ -134,5 +178,41 @@ class CTPTrader(object):
 	def QryQueryMaxOrderVolume(self,BrokerID,InvestorID,Instrument,Direction,OffsetFlag,HedgeFlag,MaxVolume):
 		return self.fQryQueryMaxOrderVolume(BrokerID,InvestorID,Instrument,Direction,OffsetFlag,HedgeFlag,MaxVolume)	
 	
- 
+	def OnCmd(self):
+		return self.fOnCmd()
+
+	def GetCmd(self):
+		return (self.fGetCmd(),self.fGetCmdContent()) 	
+
+	def GetUnGetCmdSize(self):
+		return self.fGetUnGetCmdSize()	
+	
+	def GetCmdContent_Order(self):
+		#订单回报回调
+		return self.fGetCmdContent_Order()
+		
+	def GetCmdContent_Settlement(self):
+		#结算单确认回调
+		return self.fGetCmdContent_Settlement()
+	
+	def GetCmdContent_Error(self):
+		#错误信息回调
+		return self.fGetCmdContent_Error()
+	
+	def GetCmdContent_LoginScuess(self):
+		#登录回调
+		return self.fGetCmdContent_LoginScuess()
+	
+	def GetCmdContent_Connected(self):
+		#连接成功回调
+		return self.fGetCmdContent_Connected()
+	
+	def GetCmdContent_ProductGroupMargin(self):
+		#请求查询合约保证金率响应回调
+		return self.fGetCmdContent_ProductGroupMargin()	
+	
+	def GetCmdContent_CommissionRate(self):
+		#请求查询合约手续费率响应回调
+		return self.fGetCmdContent_CommissionRate()		
+	
 	

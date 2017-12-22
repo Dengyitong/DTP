@@ -7,6 +7,7 @@ Created on Thu Dec 07 09:02:36 2017
 #%%第三方库
 import re
 import os#系统操作库
+import time#时间处理工具
 import datetime as dt#日期时间处理库
 import requests#简单易用的HTTP库
 import pandas as pd#高效的数据分析库
@@ -43,6 +44,7 @@ def printHead(title):
     printLog('-'*60)
 #%%历史行情下载函数 
 def load_his_data(commodity):
+    commodity=commodity.upper()#行情下载品种需要大写，强制转换
     #新浪财经期货接口下载数据
     url='http://stock2.finance.sina.com.cn/futures/api/json.php/IndexService.getInnerFuturesDailyKLine?symbol='+str(commodity)#请求网址
     try:
@@ -61,6 +63,7 @@ def load_his_data(commodity):
     return MarketData
 #%%获取实时行情
 def tick(commodity):
+    commodity=commodity.upper()#行情下载品种需要大写，强制转换
     url_least='http://hq.sinajs.cn/list='+commodity
     least_object = requests.get(url_least)#获取相应体
     least_str=re.findall(r'\"(.*)\"',least_object.text)[0]#匹配字符串
@@ -192,7 +195,7 @@ def generate_sign(contracts,sign_dir,cache_dir):
     
     return Sign_message
 #%%信号下单
-def trade_sign_order(trade_sign={},contracts_hand={}):#根据交易信号下单
+def trade_sign_order(trade_sign={},contracts_hand={},holds={}):#根据交易信号下单
     order_send=''#获取下单的综合表单
     if len(trade_sign)==0:
         printLog('no need to trade')
@@ -209,71 +212,124 @@ def trade_sign_order(trade_sign={},contracts_hand={}):#根据交易信号下单
             
         #执行信号单
         for key in trade_sign.keys():
-            
             if trade_sign[key]==1:#多信号
-                Short=trader.QryPosition(key,QL_POSITION_Sell_All)#空单总计
+                key=key.lower()#下单需要小写，强制转换
+                if key in holds.keys():
+                    Short=holds[key]['sell']
+                else:
+                    Short=0
+                   
                 if Short>0:#存在空单：平仓并多单
+                    
                     #平
-                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Buy, QL_OF_Close,\
-                        QL_OPT_LimitPrice,getLastPrice(key,'sell'), Short)
-                    message=key+',long,close,'+str(Short)+','+\
-                        str(getLastPrice(key,'sell'))+','+str(dt.datetime.today())[:19]
-
-                    printLog(message)
-                    order_send=order_send+message+';\n'
+                    price=getLastPrice(key.upper(),'sell')
                     
+                    retLogin=trader.Login()
+                    OrderRef=trader.InsertOrder(key, QL_D_Buy, QL_OF_CloseYesterday,\
+                       QL_OPT_LimitPrice,price, Short)
+           
                     #开
-                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Buy, QL_OF_Open,\
-                        QL_OPT_LimitPrice,getLastPrice(key,'sell'), contracts_hand[key])
+                    retLogin=trader.Login()
+                    OrderRef=trader.InsertOrder(key, QL_D_Buy, QL_OF_Open,\
+                        QL_OPT_LimitPrice,price, contracts_hand[key.upper()])
+        
+                    message1=key+',long,close,'+str(Short)+','+\
+                        str(getLastPrice(key.upper(),'sell'))+','+\
+                        str(dt.datetime.today())[:19]
+                    printLog(message1)
+                    order_send=order_send+message1+';\n'
                     
-                    message=key+',long,open,'+str(contracts_hand[key])+','+str(getLastPrice(key,'sell'))+','+\
-                           str(dt.datetime.today())[:19]
 
-                    printLog(message)
-                    order_send=order_send+message+';\n'
+                    message2=key+',long,open,'+str(contracts_hand[key.upper()])+','+str(getLastPrice(key.upper(),'sell'))+','+\
+                           str(dt.datetime.today())[:19]
+                    printLog(message2)
+                    order_send=order_send+message2+';\n'
                     
                 else :#不存在空单，开多单
+                    price=getLastPrice(key.upper(),'sell')
                     #开
-                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Buy, QL_OF_Open,\
-                        QL_OPT_LimitPrice,getLastPrice(key,'sell'), contracts_hand[key])
-                    
-                    message=key+',long,open,'+str(contracts_hand[key])+','+str(getLastPrice(key,'sell'))+','+\
+                    retLogin=trader.Login()
+                    OrderRef=trader.InsertOrder(key, QL_D_Buy, QL_OF_Open,\
+                        QL_OPT_LimitPrice,price, contracts_hand[key.upper()])
+           
+                    message=key+',long,open,'+str(contracts_hand[key.upper()])+','+str(getLastPrice(key.upper(),'sell'))+','+\
                            str(dt.datetime.today())[:19]
-  
                     printLog(message)
                     order_send=order_send+message+';\n'
                     
             elif trade_sign[key]==-1:#空信号
-                Long=trader.QryPosition(key,QL_POSITION_Buy_All)#多单总计
-
+                key=key.lower()#下单需要小写，强制转换
+                if key in holds.keys():
+                    Long=holds[key]['buy']
+                else:
+                    Long=0
                 if Long>0:#存在多单：平仓并空单
-                    
+                    price=getLastPrice(key.upper(),'buy')
                     #平
-                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Sell, QL_OF_Close,\
-                        QL_OPT_LimitPrice, getLastPrice(key,'buy'), Long)
-                    message=key+',short,close,'+str(Long)+','+\
-                             str(getLastPrice(key,'buy'))+','+str(dt.datetime.today())[:19]
-        
-                    printLog(message)
-                    order_send=order_send+message+';\n'
+                    retLogin=trader.Login()
+                    OrderRef=trader.InsertOrder(key, QL_D_Sell, QL_OF_CloseYesterday,\
+                        QL_OPT_LimitPrice,price,Long)
+            
                     #开
-                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Sell, QL_OF_Open,\
-                        QL_OPT_LimitPrice, getLastPrice(key,'buy'), contracts_hand[key])
-                    message=key+',short,open,'+str(contracts_hand[key])+','+str(getLastPrice(key,'buy'))+','+\
-                        str(dt.datetime.today())[:19]
-             
-                    printLog(message)
-                    order_send=order_send+message+';\n'
-                else :#不存在多单，开空单
-                    #开
-                    OrderRef= trader.InsertOrder(key.lower(), QL_D_Sell, QL_OF_Open,\
-                        QL_OPT_LimitPrice, getLastPrice(key,'buy'), contracts_hand[key])
-                    message=key+',short,open,'+str(contracts_hand[key])+','+str(getLastPrice(key,'buy'))+','+\
-                        str(dt.datetime.today())[:19]
+                    retLogin=trader.Login()
+                    OrderRef=trader.InsertOrder(key, QL_D_Sell, QL_OF_Open,\
+                        QL_OPT_LimitPrice, price, contracts_hand[key.upper()])
+            
+                    message1=key+',short,close,'+str(Long)+','+\
+                             str(getLastPrice(key.upper(),'buy'))+','+\
+                             str(dt.datetime.today())[:19]
+                    printLog(message1)
+                    order_send=order_send+message1+';\n'
 
+                    message2=key+',short,open,'+str(contracts_hand[key.upper()])+','+str(getLastPrice(key.upper(),'buy'))+','+\
+                        str(dt.datetime.today())[:19]
+                    printLog(message2)
+                    order_send=order_send+message2+';\n'
+                else :#不存在多单，开空单
+                    price=getLastPrice(key.upper(),'buy')
+                    #开
+                    retLogin=trader.Login()
+                    OrderRef=trader.InsertOrder(key, QL_D_Sell, QL_OF_Open,\
+                        QL_OPT_LimitPrice,price,contracts_hand[key.upper()])
+
+                    message=key+',short,open,'+str(contracts_hand[key.upper()])+','+str(getLastPrice(key.upper(),'buy'))+','+\
+                        str(dt.datetime.today())[:19]
                     printLog(message)
                     order_send=order_send+message+';\n'
             else:
                 printLog('The sign is error,stop trade')
                 
     return order_send
+#%%更新持仓
+def update_holds(trade_log='',holds={}):
+    new_holds=holds
+    order_group=trade_log.split('\n')
+    for order in order_group:
+        if not len(order)==0:
+            order_lst=order.split(',')
+            if order_lst[0] in new_holds.keys():
+                if order_lst[1]=='long' and order_lst[2]=='open':
+                    new_holds[order_lst[0]]['buy']=\
+                    new_holds[order_lst[0]]['buy']+int(order_lst[3])
+                elif order_lst[1]=='long' and order_lst[2]=='close':
+                    new_holds[order_lst[0]]['sell']=\
+                    new_holds[order_lst[0]]['sell']-int(order_lst[3])
+                elif order_lst[1]=='short' and order_lst[2]=='open':
+                    new_holds[order_lst[0]]['sell']=\
+                    new_holds[order_lst[0]]['sell']+int(order_lst[3])
+                elif order_lst[1]=='short' and order_lst[2]=='close':
+                    new_holds[order_lst[0]]['buy']=\
+                    new_holds[order_lst[0]]['buy']-int(order_lst[3])
+                else:
+                    pass
+            else:
+                new_holds[order_lst[0]]={'buy':0,'sell':0}
+                if order_lst[1]=='long' and order_lst[2]=='open':
+                    new_holds[order_lst[0]]['buy']=\
+                    new_holds[order_lst[0]]['buy']+int(order_lst[3])
+                elif order_lst[1]=='short' and order_lst[2]=='open':
+                    new_holds[order_lst[0]]['sell']=\
+                    new_holds[order_lst[0]]['sell']+int(order_lst[3])
+                else:
+                    pass
+    return new_holds

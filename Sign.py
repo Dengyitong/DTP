@@ -25,19 +25,17 @@ fun.printHead('1[sign].SCRIPT SETTING')
 fun.printLog('currentdir is: '+current_dir)
 
 #生成需要目录
-
 setting=fun.createdir([sign_dir,cache_dir])
 #%%全局变量定义
     
 #关注的月份和品种（可定制）
-
-Focus_dates=['1801','1805','1809']#关注的合约月份
-Focus_commoditys=['I','J','JM']#关注的商品期货
+Focus_dates=['1805','1809']#关注的合约月份
+Focus_commoditys=['I','JM']#关注的商品期货，不区分大小写
 contracts=[]#合约总数
 for Focus_commodity in Focus_commoditys:
     for Focus_date in Focus_dates:
         contracts.append(Focus_commodity+Focus_date)
-contracts.extend(['RB1805','RB1810','RB1801'])
+contracts.extend(['RB1805','RB1810'])
 
 #日志信息头
 fun.printHead('2[sign].GLOBAL VAR')
@@ -79,8 +77,11 @@ def main():
     if len(Sign_message)==0:
         fun.printLog('It is time to rest...')
     else:
+        send_message=''
+        for k,v in Sign_message.items():
+            send_message=send_message+str(k)+':'+str(v)+'\n'
         fun.sendEmail('bdml_dyt@outlook.com','dyt520shenghuo',\
-                  '727379993@qq.com','TradeSign',str(Sign_message))
+                  '727379993@qq.com','TradeSign',send_message)
  
 #%%执行程序
 if __name__ == '__main__':
