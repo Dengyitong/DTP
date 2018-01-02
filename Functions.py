@@ -221,17 +221,18 @@ def trade_sign_order(trade_sign={},contracts_hand={},holds={}):#根据交易信�
                    
                 if Short>0:#存在空单：平仓并多单
                     
-                    #平
-                    price=getLastPrice(key.upper(),'sell')
+                    price=getLastPrice(key.upper(),'sell') 
                     
+                    #平
                     retLogin=trader.Login()
                     OrderRef=trader.InsertOrder(key, QL_D_Buy, QL_OF_CloseYesterday,\
-                       QL_OPT_LimitPrice,price, Short)
-           
+                        QL_OPT_LimitPrice,price,Short)
+            
                     #开
                     retLogin=trader.Login()
                     OrderRef=trader.InsertOrder(key, QL_D_Buy, QL_OF_Open,\
-                        QL_OPT_LimitPrice,price, contracts_hand[key.upper()])
+                        QL_OPT_LimitPrice, price, contracts_hand[key.upper()])
+            
         
                     message1=key+',long,close,'+str(Short)+','+\
                         str(getLastPrice(key.upper(),'sell'))+','+\

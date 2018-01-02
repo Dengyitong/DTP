@@ -10,7 +10,6 @@ import Functions as fun
 #%%文件配置
 
 #设置文件目录
-import os
 current_dir='E:/PythonScripts'#当前目录
 order_dir='BlackOrder'#下单记录目录
 cache_dir='BlackCache'#持仓和最新信号缓存目录
@@ -49,8 +48,8 @@ for Focus_commodity in Focus_commoditys:
         contracts.append(contract)
         contracts_hand[contract]=commoditys_hand[Focus_commodity]
 '''
-contracts=['RB1810','I1809']#合约总数，建议大写
-contracts_hand={'RB1810':1,'I1809':1}#合约手数映射,需要大写
+contracts=['RB1810']#合约总数，建议大写
+contracts_hand={'RB1810':1}#合约手数映射,需要大写
 
 
 #日志信息头
