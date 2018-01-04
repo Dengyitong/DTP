@@ -48,8 +48,8 @@ for Focus_commodity in Focus_commoditys:
         contracts.append(contract)
         contracts_hand[contract]=commoditys_hand[Focus_commodity]
 '''
-contracts=['RB1810']#合约总数，建议大写
-contracts_hand={'RB1810':1}#合约手数映射,需要大写
+contracts=['JM1805','I1809','RB1810']#合约总数，建议大写
+contracts_hand={'JM1805':1,'I1809':1,'RB1810':1}#合约手数映射,需要大写
 
 
 #日志信息头
